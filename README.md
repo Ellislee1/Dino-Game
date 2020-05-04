@@ -11,8 +11,8 @@ To play the game pygame and numpy are required, use `pip install pygame numpy` t
 
 ## Development Plan - For the game
 
-- Create collision boxes
-- Create game over screen
+- Improve game over screen
+- Add Start Screen
 - Create reset option
 - Add some stochastic obstacle creation
 - Add Sprites for character and obstacles

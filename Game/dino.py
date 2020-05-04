@@ -4,6 +4,7 @@ pygame.init()
 
 WIDTH = 500
 HEIGHT = 500
+FPS = 60
 
 class Window:
     def __init__(self, width, height, character):
@@ -18,7 +19,29 @@ class Window:
         self.leveler = [100, 200, 500, 1000]
         self.timeCounter = 0
         self.obsTracker = []
+        self.gameOver = False
+        self.clock = pygame.time.Clock()
     
+    def over(self):
+        self.win.fill((255, 255, 255))
+        text = self.font.render(f'Final Score: {self.score}', 1, self.character.colour)
+        self.win.blit(text, (230, 250))
+        pygame.display.update()
+        self.waitforkey()
+    
+    def waitforkey(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    waiting = False
+                    self.run = False
+                if event.type == pygame.K_SPACE:
+                    waiting = False
+                    self.run = False
+
+
     def update(self):
         self.timeCounter += 1
         self.score +=1
@@ -59,9 +82,25 @@ class Window:
             else:
                 self.character.jump = False
                 self.character.jumpStage = 10
-        self.redraw()
+        
+        collide = False
+
+        for obj in self.obsTracker:
+            if (self.character.y) >= obj.y and self.character.y <= (obj.y + obj.height):
+                collide = self.checkX(obj)
+            elif (self.character.y + self.character.height) >= obj.y and ((self.character.y + self.character.height) <= obj.y + obj.height):
+                collide = self.checkX(obj)
+
+
+        self.redraw(collide)
     
-    def redraw(self):
+    def checkX(self, obj):
+        if self.character.x + self.character.width >= obj.x and self.character.x + self.character.width <= obj.x + obj.width:
+            return True
+        elif self.character.x >= obj.x and self.character.x <= obj.x + obj.width:
+            return True
+    
+    def redraw(self, collide):
         self.character.update()
         level = self.leveler[0]
         if self.score == level:
@@ -88,6 +127,8 @@ class Window:
                         self.leveler[0] += 500
                         self.level.play()
                     self.score += 50
+        if collide == True:
+            self.gameOver = True
         pygame.display.update()
 
 class Character:
@@ -108,6 +149,9 @@ class Character:
             self.height = 25
         else:
             self.height = 50
+    
+    def hit(self, score):
+        pass
 
 class Obstical:
     def __init__(self):
@@ -122,7 +166,7 @@ class Bird:
         self.x = 500
         self.heights = [382, 358, 310]
         self.y = np.random.choice(self.heights, 1)[0]
-        self.width = 40
+        self.width = 45
         self.height = 16
         self.velocity = 5
 
@@ -133,5 +177,12 @@ def run():
 
     while world.run:
         pygame.time.delay(30)
-        world.update()
+        if not world.gameOver:
+            world.update()
+        else:
+            world.run = False
+
+
+    world.over()
+
     pygame.quit()
